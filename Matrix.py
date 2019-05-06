@@ -23,7 +23,7 @@ def cs(w_ik, w_jk):
         tau = -w_ik/w_jk
         return tau/math.sqrt(1+tau*tau), 1/math.sqrt(1+tau*tau)
 
-def Rotgivens(W, n, m, i, j, c, s):
+def Rotgivens(W, n, m, i, j, k, c, s):
     """Givens rotation.
 
         Parameters
@@ -45,7 +45,7 @@ def Rotgivens(W, n, m, i, j, c, s):
     assert type(i) is int, "i should be integer, received %s" %(type(i))
     #assert type(c) is number, "c should be number, received %s" %(type(c))
     #assert type(s) is number, "s should be number, received %s" %(type(s))
-    for r in range(m):
+    for r in range(k,m):
         aux = c * W[i][r] - s * W[j][r]
         W[j][r] = s * W[i][r] + c * W[j][r]
         W[i][r] = aux
@@ -70,8 +70,8 @@ def solveLinear(W, n, m, b):
             i=j-1
             if W[j][k] != 0:
                 c, s = cs(W[i][k], W[j][k])
-                Rotgivens(W, n, m, i, j, c, s)
-                Rotgivens(b, n, 1, i, j, c, s)
+                Rotgivens(W, n, m, i, j, k, c, s)
+                Rotgivens(b, n, 1, i, j, 0, c, s)
     x = np.zeros(m)
     for k in range(m-1, -1, -1):
         sum = 0
@@ -121,8 +121,8 @@ def solveMultipleLinear(W, n, m, p, A):
             i=j-1
             if W[j][k] != 0:
                 c, s = cs(W[i][k], W[j][k])
-                Rotgivens(W, n, p, i, j, c, s)
-                Rotgivens(A, n, m, i, j, c, s)
+                Rotgivens(W, n, p, i, j, k, c, s)
+                Rotgivens(A, n, m, i, j, 0, c, s)
     h = np.zeros((p, m))
     for k in range(p-1, -1, -1):
         for j in range(m):
