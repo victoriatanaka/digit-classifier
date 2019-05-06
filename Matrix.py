@@ -2,6 +2,7 @@ import math
 import numpy as np
 import random
 from copy import deepcopy
+import time
 
 def cs(w_ik, w_jk):
     """Calculates c and s used in Givens rotation.
@@ -133,7 +134,7 @@ def solveMultipleLinear(W, n, m, p, A):
 
     return h
 
-def squaredError(A, W, H, n, m):
+def squaredError(A, W, H):
     """Calculates squared error ||A − W * H||**2.
 
         Parameters
@@ -141,18 +142,17 @@ def squaredError(A, W, H, n, m):
         A : float[][]
         W : float[][]
         H : float[][]
-        n : int
-        m : int
 
         Returns
         ----------
         err : float
     """
-    err = 0
-    for i in range(n):
-        for j in range(m):
-            err += (A[i][j] - np.matmul(W, H)[i][j])**2
-    return err
+    return (np.square(A - np.matmul(W, H))).mean(axis=None)
+    # err = 0
+    # for i in range(n):
+    #     for j in range(m):
+    #         err += (A[i][j] - np.matmul(W, H)[i][j])**2
+    # return err
 
 def columnNorms(W):
     """Calculates norms of W columns.
@@ -221,24 +221,35 @@ def NMF(A, n, m, p):
 
     epislon = 0.00001
     itmax = 100
-    err_ant = squaredError(A, W, H, n, m)
+    err_ant = squaredError(A, W, H)
     err = err_ant
     iterations = 0
     while err/err_ant > epislon and iterations < itmax:
+        start_time = time.time()
         normalizeMatrix(W, n, p)
+        #print("Normalizacao da matriz feita em %.3f segundos!"%(time.time() - start_time))
         
+        start_time = time.time()
         H = solveMultipleLinear(deepcopy(W), n, m, p, deepcopy(A))
+        #print("solveMultipleLinear feita em %.3f segundos!"%(time.time() - start_time))
+        
+        start_time = time.time()
         positiveMatrix(H, p, m)
+        #print("positiveMatrix feita em %.3f segundos!"%(time.time() - start_time))
         
         At = np.transpose(A)
         Ht = deepcopy(np.transpose(H))
+        start_time = time.time()
         Wt = solveMultipleLinear(Ht, m, n, p, At)
-       
+        #print("solveMultipleLinear transpose feita em %.3f segundos!"%(time.time() - start_time))
+
         W = np.transpose(Wt)
         positiveMatrix(W, n, p)
         
         err_ant = err
-        err = squaredError(A, W, H, n, m)
+        start_time = time.time()
+        err = squaredError(A, W, H)
+        #print("calculo do erro feita em %.3f segundos!"%(time.time() - start_time))
         iterations+=1
     return W, H
 
