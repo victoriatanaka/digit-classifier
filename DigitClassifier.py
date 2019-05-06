@@ -1,8 +1,6 @@
 import Matrix
-import Print
 import numpy as np
-import time
-
+from copy import deepcopy
 
 class DigitClassifier:
     MAX_TRAINING = 5300
@@ -31,11 +29,10 @@ class DigitClassifier:
         """
         A = Matrix.readMatrix("dados_mnist/test_images.txt", self.ntests)
         errors = np.ones(self.ntests)* np.inf
+        self.mostLikelyDigit = np.ones(self.ntests)*(-1)
         for i in range(0, 10):
-            H = Matrix.solveMultipleLinear(self.W[i], self.n, self.ntests, self.p, A)
+            H = Matrix.solveMultipleLinear(deepcopy(self.W[i]), self.n, self.ntests, self.p, deepcopy(A))
             column_errors = Matrix.columnNorms(np.subtract(A, np.matmul(self.W[i], H)))
-            self.mostLikelyDigit = np.ones(self.ntests)*(-1)
-            print(column_errors)
             for j in range(len(errors)):
                 if column_errors[j] < errors[j]:
                     self.mostLikelyDigit[j] = i
@@ -86,7 +83,6 @@ class DigitClassifier:
             total[int(self.realResults[i])]+=1
         return hits, hits/total
 
-
     def results(self):
         """Calculates results for this experiment:
         1) Percentual total hits
@@ -102,18 +98,4 @@ class DigitClassifier:
         self.realResults = self.readRealResults()
         hitRate = self.calculateHitRate()
         hitPerDigit, hitRatePerDigit = self.calculateHitPerDigit()
-        print(self.mostLikelyDigit)
         return hitRate, hitPerDigit, hitRatePerDigit
-ntreino = 5
-p = 2
-ntest = 10
-c = DigitClassifier(p, ntreino, ntest)
-Print.okBlue("Treinando os classificadores...")
-start_time = time.time()
-c.train()
-Print.okGreen("Feito em %.3f segundos!"%(time.time() - start_time))
-Print.okBlue("Rodando os testes...")
-start_time = time.time()
-c.test()
-Print.okGreen("Feito em %.3f segundos!"%(time.time() - start_time))
-c.results()
