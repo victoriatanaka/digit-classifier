@@ -4,7 +4,9 @@ Lê os argumentos do input do usuário.
 
 import Matrix
 import Print
+import DigitClassifier
 import numpy as np
+import time
 
 def parte1():
     print("\nParte 1\n----------------------\nRot-givens\n")
@@ -178,8 +180,50 @@ def parte3():
     print("matriz H:")
     Print.okGreen(H)
 
+def parte4():
+    Print.warning("*** Dependendo dos valores dos parâmetros, o tempo de execução pode ser muito alto. ***\n")
+    parte4_teste1()
+    voltar = False
+    while not voltar:
+        escolher = input("Deseja escolher valores para os parâmetros? (s/n): ")
+        if escolher == "s":
+            parte4_escolher()
+        elif escolher == "n":
+            voltar = True
+        else:
+            Print.fail("Opção inválida! Tente novamente.")
+
+def parte4_teste1():
+    ndig_treino = 18
+    p = 10
+    n_test = 1000
+    parte4_rodar(ndig_treino, p, n_test)
+
+def parte4_escolher():
+    ndig_treino = int(input("Escolha um valor para ndig_treino: "))
+    p = int(input("Escolha um valor para p: "))
+    n_test = int(input("Escolha um valor para n_test: "))
+    parte4_rodar(ndig_treino, p, n_test)
+    
+def parte4_rodar(ndig_treino, p, n_test):
+    instance = DigitClassifier.DigitClassifier(p, ndig_treino, n_test)
+    Print.okBlue("Teste: ndig_treino = %d p = %d n_test = %d\n----------------------" %(ndig_treino, p, n_test))
+    Print.okBlue("Treinando os classificadores...")
+    start_time = time.time()
+    instance.train()
+    Print.okBlue("Feito em %.3f segundos!"%(time.time() - start_time))
+    Print.okBlue("Rodando os testes...")
+    start_time = time.time()
+    instance.test()
+    Print.okBlue("Feito em %.3f segundos!"%(time.time() - start_time))
+    hitRate, _, hitRatePerDigit = instance.results()
+    Print.okGreen("Porcentual total de acertos: %.2f" %hitRate)
+    Print.okGreen("Porcentual de acertos por dígito:")
+    for i in range(10):
+        Print.okGreen("%d: %.2f" %(i, hitRatePerDigit[i]))
+
 def printOptions():
-    Print.header("\n----------------------\n(1) Rot-givens\n(2) Vários sistemas simultâneos\n(3) Fatoração por matrizes não negativas")
+    Print.header("\n----------------------\n(1) Rot-givens\n(2) Vários sistemas simultâneos\n(3) Fatoração por matrizes não negativas\n(4) Classificação de dígitos")
     Print.header("(q) Sair")
     
 def main():
@@ -196,14 +240,13 @@ def main():
             parte2()
         elif item == "3":
             parte3()
+        elif item == "4":
+            parte4()
         elif item == "q":
             exit = True
             Print.okBlue("Fim do programa.")
         else:
             Print.fail("Opção inválida! Tente novamente.")
-
-
-
 
 if __name__ == "__main__":
     main()
