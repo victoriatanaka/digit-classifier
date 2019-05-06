@@ -8,3 +8,4 @@
     * numpy (matmul, sqrt, zeros, ones, transpose, subtract, array, inf)
     * random (uniform)
     * copy (deepcopy)
+    * time (time)
