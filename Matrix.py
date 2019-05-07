@@ -17,12 +17,16 @@ def cs(w_ik, w_jk):
         c : float
         s : float
     """
-    if abs(w_ik) > abs(w_jk):
-        tau = -w_jk/w_ik
-        return 1/math.sqrt(1+tau*tau), tau/math.sqrt(1+tau*tau)
-    else:
-        tau = -w_ik/w_jk
-        return tau/math.sqrt(1+tau*tau), 1/math.sqrt(1+tau*tau)
+    if abs(w_jk) < np.finfo(np.double).eps: # better:  abs(z) < np.finfo(np.double).eps
+        return 1.0,0.0
+    r = np.hypot(w_ik,w_jk) # C99 hypot is safe for under/overflow
+    return w_ik/r, -w_jk/r
+    # if abs(w_ik) > abs(w_jk):
+    #     tau = -w_jk/w_ik
+    #     return 1/math.sqrt(1+tau*tau), tau/math.sqrt(1+tau*tau)
+    # else:
+    #     tau = -w_ik/w_jk
+    #     return tau/math.sqrt(1+tau*tau), 1/math.sqrt(1+tau*tau)
 
 def Rotgivens(W, n, m, i, j, k, c, s):
     """Givens rotation.
@@ -46,6 +50,7 @@ def Rotgivens(W, n, m, i, j, k, c, s):
     assert type(i) is int, "i should be integer, received %s" %(type(i))
     #assert type(c) is number, "c should be number, received %s" %(type(c))
     #assert type(s) is number, "s should be number, received %s" %(type(s))
+
     for r in range(k,m):
         aux = c * W[i][r] - s * W[j][r]
         W[j][r] = s * W[i][r] + c * W[j][r]
@@ -124,6 +129,7 @@ def solveMultipleLinear(W, n, m, p, A):
                 c, s = cs(W[i][k], W[j][k])
                 Rotgivens(W, n, p, i, j, k, c, s)
                 Rotgivens(A, n, m, i, j, 0, c, s)
+
     h = np.zeros((p, m))
     for k in range(p-1, -1, -1):
         for j in range(m):
@@ -131,7 +137,6 @@ def solveMultipleLinear(W, n, m, p, A):
             for i in range(k+1, p):
                 sum += W[k][i]*h[i][j]
             h[k][j] = (A[k][j] - sum)/W[k][k]
-
     return h
 
 def squaredError(A, W, H):
@@ -212,15 +217,11 @@ def NMF(A, n, m, p):
         W : float[][]
         H : float[][]
     """
-    W = np.zeros((n, p))
+    W = np.random.rand(n, p)
     H = np.zeros((p, m))
 
-    for i in range(n):
-        for j in range(p):
-            W[i][j] = random.uniform(1, 10)
-
     epislon = 0.00001
-    itmax = 100
+    itmax = 10
     err_ant = squaredError(A, W, H)
     err = err_ant
     iterations = 0
@@ -231,7 +232,7 @@ def NMF(A, n, m, p):
         
         start_time = time.time()
         H = solveMultipleLinear(deepcopy(W), n, m, p, deepcopy(A))
-        #print("solveMultipleLinear feita em %.3f segundos!"%(time.time() - start_time))
+        print("solveMultipleLinear feita em %.3f segundos!"%(time.time() - start_time))
         
         start_time = time.time()
         positiveMatrix(H, p, m)
@@ -241,7 +242,7 @@ def NMF(A, n, m, p):
         Ht = deepcopy(np.transpose(H))
         start_time = time.time()
         Wt = solveMultipleLinear(Ht, m, n, p, At)
-        #print("solveMultipleLinear transpose feita em %.3f segundos!"%(time.time() - start_time))
+        print("solveMultipleLinear transpose feita em %.3f segundos!"%(time.time() - start_time))
 
         W = np.transpose(Wt)
         positiveMatrix(W, n, p)
@@ -251,6 +252,8 @@ def NMF(A, n, m, p):
         err = squaredError(A, W, H)
         #print("calculo do erro feita em %.3f segundos!"%(time.time() - start_time))
         iterations+=1
+        print(iterations)
+        print(err)
     return W, H
 
 def readMatrix(filename, m):
