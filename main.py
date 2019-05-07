@@ -7,6 +7,8 @@ import Print
 import DigitClassifier
 import numpy as np
 import time
+import os
+import ctypes
 
 def parte1():
     print("\nParte 1\n----------------------\nRot-givens\n")
@@ -229,6 +231,10 @@ def printOptions():
 def main():
     """Main function.
     """
+    # enabling Virtual Terminal Processing for Windows to print colorful output!
+    if isWindows():
+        kernel32 = ctypes.windll.kernel32
+        kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
     Print.bold("\nBem vindo ao EP1 de xxxxxx!")
     exit = False
     while not exit:
