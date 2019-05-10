@@ -1,4 +1,4 @@
-# EP1 Cálculo Numérico
+# EP1 Cálculo Numérico - Classificador de Dígitos
 
 * Feito em python 3.5.3, ambiente MACOS 10.13.6
 * Para rodar, faça: python main.py (precisa de Python versão 3.5 ou maior)
